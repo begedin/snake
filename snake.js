@@ -39,6 +39,19 @@ class Player {
     this.segments = [new Segment(x, y)];
   }
 
+  isDead({ x: maxX, y: maxY }) {
+    const head = this.segments[0];
+
+    // check if head is out of bounds
+    if (head.x < 0 || head.x >= maxX || head.y < 0 || head.y >= maxY) {
+      return true;
+    }
+
+    // check if head colided with tail
+    const tail = this.segments.slice(1);
+    return tail.some((segment) => segment.overlaps(head));
+  }
+
   get nextSquare() {
     const head = this.segments[0];
 
@@ -55,7 +68,6 @@ class Player {
   }
 
   hasEaten({ x, y }) {
-    console.log(x, y, this.x, this.y);
     return this.x === x && this.y === y;
   }
 
@@ -111,8 +123,7 @@ class Game {
       y: canvas.height / this.gridSize.y
     };
 
-    this.player = new Player(this.gridSize.x / 2, this.gridSize.y / 2);
-    this.food = Food.spawn(this.gridSize.x, this.gridSize.y);
+    this.init();
 
     document.addEventListener('keydown', (e) => {
       this.player.handleInput(e);
@@ -142,6 +153,15 @@ class Game {
     if (this.food.isEaten) {
       this.food = Food.spawn(this.gridSize.x, this.gridSize.y);
     }
+
+    if (this.player.isDead(this.gridSize)) {
+      this.init();
+    }
+  }
+
+  init() {
+    this.player = new Player(this.gridSize.x / 2, this.gridSize.y / 2);
+    this.food = Food.spawn(this.gridSize.x, this.gridSize.y);
   }
 }
 

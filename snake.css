@@ -3,6 +3,10 @@
   margin: auto;
 }
 
+@media only screen and (orientation: landscape) {
+  .game { width: 60%; }
+}
+
 canvas {
   width: 100%;
 }

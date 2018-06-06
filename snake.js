@@ -1,6 +1,6 @@
-class Segment {
-  constructor(x, y) {
-    this.color = 'green';
+class Block {
+  constructor(x, y, color) {
+    this.color = color;
     this.x = x;
     this.y = y;
   }
@@ -8,6 +8,29 @@ class Segment {
   draw(context, { x: tileSizeX, y: tileSizeY }) {
     context.fillStyle = this.color;
     context.fillRect(this.x * tileSizeX, this.y * tileSizeY, tileSizeX, tileSizeY);
+  }
+
+  overlaps({ x, y }) {
+    return this.x === x && this.y === y;
+  }
+}
+
+class Food extends Block {
+  constructor(x, y) {
+    super(x, y, 'yellow');
+  }
+
+  static spawn(x, y) {
+    return new Food(
+      Math.floor(Math.random() * x),
+      Math.floor(Math.random() * y)
+    );
+  }
+}
+
+class Segment extends Block {
+  constructor(x, y) {
+    super(x, y, 'green');
   }
 }
 
@@ -31,17 +54,31 @@ class Player {
     }
   }
 
+  hasEaten({ x, y }) {
+    console.log(x, y, this.x, this.y);
+    return this.x === x && this.y === y;
+  }
+
   draw(context, tileSize) {
     this.segments.forEach((segment) => segment.draw(context, tileSize));
   }
 
-  update() {
+  update(food) {
     const { nextSquare } = this;
 
     if (nextSquare) {
       this.segments.unshift(nextSquare);
-      this.segments.pop();
+
+      if (nextSquare.overlaps(food)) {
+        food.isEaten = true;
+      } else {
+        this.segments.pop();
+      }
     }
+  }
+
+  eat({ x, y }) {
+    return this.segments.unshift(new Segment(x, y));
   }
 
   handleInput({ key }) {
@@ -75,6 +112,7 @@ class Game {
     };
 
     this.player = new Player(this.gridSize.x / 2, this.gridSize.y / 2);
+    this.food = Food.spawn(this.gridSize.x, this.gridSize.y);
 
     document.addEventListener('keydown', (e) => {
       this.player.handleInput(e);
@@ -95,10 +133,15 @@ class Game {
     context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 
     this.player.draw(context, this.tileSize);
+    this.food.draw(context, this.tileSize);
   }
 
   update() {
-    this.player.update();
+    this.player.update(this.food);
+
+    if (this.food.isEaten) {
+      this.food = Food.spawn(this.gridSize.x, this.gridSize.y);
+    }
   }
 }
 

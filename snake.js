@@ -112,6 +112,16 @@ class Player {
   }
 }
 
+class ScoreBoard {
+  static setScore(value) {
+    document.getElementById('score').innerText = value;
+  }
+
+  static resetScore() {
+    this.setScore(0);
+  }
+}
+
 class Game {
   constructor() {
     const canvas = document.getElementById('snake');
@@ -157,6 +167,8 @@ class Game {
     if (this.player.isDead(this.gridSize)) {
       this.init();
     }
+
+    ScoreBoard.setScore(this.player.segments.length - 1);
   }
 
   init() {
